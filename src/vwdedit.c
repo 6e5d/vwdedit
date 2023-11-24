@@ -114,13 +114,13 @@ void vwdedit_setup(Vwdedit *ve, Vkstatic *vks,
 	uint32_t w = img->size[0];
 	uint32_t h = img->size[1];
 	vkhelper_image_new(
-		&ve->layer, vks->device, vks->memprop, w, h,
+		&ve->layer, vks->device, vks->memprop, w, h, false,
 		VK_FORMAT_B8G8R8A8_UNORM,
 		VK_IMAGE_USAGE_SAMPLED_BIT | // blend
 			VK_IMAGE_USAGE_TRANSFER_DST_BIT, // download
 		VK_IMAGE_ASPECT_COLOR_BIT);
 	vkhelper_image_new(
-		&ve->paint, vks->device, vks->memprop, w, h,
+		&ve->paint, vks->device, vks->memprop, w, h, false,
 		VK_FORMAT_B8G8R8A8_UNORM,
 		VK_IMAGE_USAGE_SAMPLED_BIT | // blend
 			VK_IMAGE_USAGE_TRANSFER_DST_BIT, // upload
@@ -131,13 +131,13 @@ void vwdedit_setup(Vwdedit *ve, Vkstatic *vks,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		VK_PIPELINE_STAGE_HOST_BIT,
 		VK_PIPELINE_STAGE_HOST_BIT,
-		ve->layer.image);
+		ve->layer);
 	vkhelper_barrier(cbuf,
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		VK_PIPELINE_STAGE_HOST_BIT,
 		VK_PIPELINE_STAGE_HOST_BIT,
-		ve->paint.image);
+		ve->paint);
 	vkstatic_oneshot_end(cbuf, vks);
 	write_desc(ve, vks->device);
 	vkhelper_buffer_init_cpu(
@@ -168,6 +168,11 @@ void vwdedit_build_command_upload(Vwdedit *ve, VkDevice device,
 void vwdedit_build_command(Vwdedit *ve, VkDevice device,
 	VkCommandBuffer cbuf
 ) {
+	// printf("%d %d %u %u\n",
+	// 	ve->dmg_paint.offset[0],
+	// 	ve->dmg_paint.offset[1],
+	// 	ve->dmg_paint.size[0],
+	// 	ve->dmg_paint.size[1]);
 	if (dmgrect_is_empty(&ve->dmg_paint)) { return; }
 	uint32_t width = ve->paint.size[0];
 	uint32_t height = ve->paint.size[1];
