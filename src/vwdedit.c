@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <vulkan/vulkan.h>
@@ -16,6 +17,13 @@
 #include "../../vkstatic/include/vkstatic.h"
 #include "../../vkstatic/include/oneshot.h"
 #include "../include/vwdedit.h"
+
+void vwdedit_damage_all(Vwdedit *ve) {
+	ve->dmg_paint.offset[0] = 0;
+	ve->dmg_paint.offset[1] = 0;
+	ve->dmg_paint.size[0] = ve->layer.size[0];
+	ve->dmg_paint.size[1] = ve->layer.size[1];
+}
 
 static void init_pipeline_edit(Vwdedit *ve, VkDevice device) {
 	char *path;
@@ -152,19 +160,15 @@ void vwdedit_setup(Vwdedit *ve, Vkstatic *vks,
 
 // upload cpu render data to gpu paint image
 void vwdedit_build_command_upload(Vwdedit *ve, VkDevice device,
-	VkCommandBuffer cbuf
-) {
-	vkhelper_buffer_texture_copy(
-		cbuf,
-		ve->paint_buffer.buffer,
-		ve->paint.image,
-		ve->paint.size[0],
-		ve->paint.size[1]);
+	VkCommandBuffer cbuf) {
+	vkhelper_buffer_texture_copy(cbuf,
+		ve->paint_buffer.buffer, ve->paint, &ve->dmg_paint);
 }
 
 void vwdedit_build_command(Vwdedit *ve, VkDevice device,
 	VkCommandBuffer cbuf
 ) {
+	if (dmgrect_is_empty(&ve->dmg_paint)) { return; }
 	uint32_t width = ve->paint.size[0];
 	uint32_t height = ve->paint.size[1];
 	vkhelper_viewport_scissor(cbuf, width, height);
@@ -181,4 +185,5 @@ void vwdedit_build_command(Vwdedit *ve, VkDevice device,
 		ve->ppll_edit, 0, 1, &ve->desc.set, 0, NULL);
 	vkCmdDraw(cbuf, 6, 1, 0, 0);
 	vkCmdEndRenderPass(cbuf);
+	dmgrect_init(&ve->dmg_paint);
 }
