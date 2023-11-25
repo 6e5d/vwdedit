@@ -27,18 +27,14 @@ void vwdedit_download_layout_layer(
 		.dstOffset = offset,
 		.extent = extent,
 	};
-	vkhelper_barrier(cbuf,
-		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+	vkhelper_barrier(cbuf, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		src);
-	vkhelper_barrier(cbuf,
-		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		&src);
+	vkhelper_barrier(cbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		ve->layer);
+		&ve->layer);
 	vkCmdCopyImage(cbuf,
 		src.image,
 		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -46,15 +42,13 @@ void vwdedit_download_layout_layer(
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		1, &icopy);
 	vkhelper_barrier(cbuf,
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		ve->layer);
+		&ve->layer);
 	vkhelper_barrier(cbuf,
-		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		src);
+		&src);
 }

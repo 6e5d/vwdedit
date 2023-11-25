@@ -26,18 +26,16 @@ void vwdedit_damage_all(Vwdedit *ve) {
 }
 
 static void init_pipeline_edit(Vwdedit *ve, VkDevice device) {
-	char *path;
+	char *path = NULL;
 	VkhelperPipelineConfig vpc = {0};
 	vkhelper_pipeline_config(&vpc, 0, 0, 1);
 	// FIXME
 	vpc.desc[0] = ve->desc.layout;
 	vpc.cba.blendEnable = VK_FALSE;
 
-	path = ppath_rel(__FILE__, "../../shader/edit_vert.spv");
+	ppath_rel(&path, __FILE__, "../../shader/edit_vert.spv");
 	vpc.stages[0].module = vkhelper_shader_module(device, path);
-	free(path);
-
-	path = ppath_rel(__FILE__, "../../shader/edit_frag.spv");
+	ppath_rel(&path, __FILE__, "../../shader/edit_frag.spv");
 	vpc.stages[1].module = vkhelper_shader_module(device, path);
 	free(path);
 
@@ -127,17 +125,15 @@ void vwdedit_setup(Vwdedit *ve, Vkstatic *vks,
 		VK_IMAGE_ASPECT_COLOR_BIT);
 	VkCommandBuffer cbuf = vkstatic_oneshot_begin(vks);
 	vkhelper_barrier(cbuf,
-		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		VK_PIPELINE_STAGE_HOST_BIT,
 		VK_PIPELINE_STAGE_HOST_BIT,
-		ve->layer);
+		&ve->layer);
 	vkhelper_barrier(cbuf,
-		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		VK_PIPELINE_STAGE_HOST_BIT,
 		VK_PIPELINE_STAGE_HOST_BIT,
-		ve->paint);
+		&ve->paint);
 	vkstatic_oneshot_end(cbuf, vks);
 	write_desc(ve, vks->device);
 	vkhelper_buffer_init_cpu(
@@ -162,7 +158,7 @@ void vwdedit_setup(Vwdedit *ve, Vkstatic *vks,
 void vwdedit_build_command_upload(Vwdedit *ve, VkDevice device,
 	VkCommandBuffer cbuf) {
 	vkhelper_buffer_texture_copy(cbuf,
-		ve->paint_buffer.buffer, ve->paint, &ve->dmg_paint);
+		ve->paint_buffer.buffer, &ve->paint, &ve->dmg_paint);
 }
 
 void vwdedit_build_command(Vwdedit *ve, VkDevice device,

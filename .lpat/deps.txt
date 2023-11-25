@@ -1,4 +1,4 @@
 ppath
 vkhelper
-vwdlayer
-simpleimg
+dmgrect
+vkstatic
