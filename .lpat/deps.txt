@@ -1,4 +1,3 @@
-ppath
 vkhelper
 dmgrect
 vkstatic

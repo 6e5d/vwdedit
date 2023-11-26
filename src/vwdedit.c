@@ -4,7 +4,6 @@
 #include <string.h>
 #include <vulkan/vulkan.h>
 
-#include "../../ppath/include/ppath.h"
 #include "../../vkhelper/include/barrier.h"
 #include "../../vkhelper/include/copy.h"
 #include "../../vkhelper/include/dynstate.h"
@@ -26,36 +25,17 @@ void vwdedit_damage_all(Vwdedit *ve) {
 }
 
 static void init_pipeline_edit(Vwdedit *ve, VkDevice device) {
-	char *path = NULL;
 	VkhelperPipelineConfig vpc = {0};
 	vkhelper_pipeline_config(&vpc, 0, 0, 1);
-	// FIXME
+	vkhelper_pipeline_simple_shader(&vpc, device,
+		__FILE__, "../../shader/edit");
 	vpc.desc[0] = ve->desc.layout;
 	vpc.cba.blendEnable = VK_FALSE;
-
-	ppath_rel(&path, __FILE__, "../../shader/edit_vert.spv");
-	vpc.stages[0].module = vkhelper_shader_module(device, path);
-	ppath_rel(&path, __FILE__, "../../shader/edit_frag.spv");
-	vpc.stages[1].module = vkhelper_shader_module(device, path);
-	free(path);
-
 	vkhelper_pipeline_build(&ve->ppll_edit, &ve->ppl_edit,
 		&vpc, ve->rp_edit, device, 0);
 	vkhelper_pipeline_config_deinit(&vpc, device);
 }
 
-
-static void init_rp_edit(Vwdedit *ve, VkDevice device) {
-	// renderpass edit
-	VkhelperRenderpassConfig renderpass_conf;
-	vkhelper_renderpass_config_offscreen(
-		&renderpass_conf,
-		device);
-	vkhelper_renderpass_build(
-		&ve->rp_edit,
-		&renderpass_conf,
-		device);
-}
 
 static void init_desc(Vwdedit *ve, VkDevice device) {
 	VkhelperDescConfig conf;
@@ -77,7 +57,9 @@ static void write_desc(Vwdedit *ve, VkDevice device) {
 }
 
 void vwdedit_init(Vwdedit *ve, VkDevice device) {
-	init_rp_edit(ve, device);
+	VkhelperRenderpassConfig renderpass_conf;
+	vkhelper_renderpass_config_offscreen(&renderpass_conf, device);
+	vkhelper_renderpass_build(&ve->rp_edit, &renderpass_conf, device);
 	ve->sampler = vkhelper_sampler(device);
 	init_desc(ve, device);
 	init_pipeline_edit(ve, device);
@@ -111,18 +93,14 @@ void vwdedit_setup(Vwdedit *ve, Vkstatic *vks,
 
 	uint32_t w = img->size[0];
 	uint32_t h = img->size[1];
-	vkhelper_image_new(
+	vkhelper_image_new_color(
 		&ve->layer, vks->device, vks->memprop, w, h, false,
-		VK_FORMAT_B8G8R8A8_UNORM,
-		VK_IMAGE_USAGE_SAMPLED_BIT | // blend
-			VK_IMAGE_USAGE_TRANSFER_DST_BIT, // download
-		VK_IMAGE_ASPECT_COLOR_BIT);
-	vkhelper_image_new(
+		VK_IMAGE_USAGE_SAMPLED_BIT |
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+	vkhelper_image_new_color(
 		&ve->paint, vks->device, vks->memprop, w, h, false,
-		VK_FORMAT_B8G8R8A8_UNORM,
-		VK_IMAGE_USAGE_SAMPLED_BIT | // blend
-			VK_IMAGE_USAGE_TRANSFER_DST_BIT, // upload
-		VK_IMAGE_ASPECT_COLOR_BIT);
+		VK_IMAGE_USAGE_SAMPLED_BIT |
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT);
 	VkCommandBuffer cbuf = vkstatic_oneshot_begin(vks);
 	vkhelper_barrier(cbuf,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
@@ -173,14 +151,8 @@ void vwdedit_build_command(Vwdedit *ve, VkDevice device,
 	uint32_t width = ve->paint.size[0];
 	uint32_t height = ve->paint.size[1];
 	vkhelper_viewport_scissor(cbuf, width, height);
-	VkRenderPassBeginInfo rp_info = {
-		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-		.renderPass = ve->rp_edit,
-		.framebuffer = ve->fb_focus,
-		.renderArea.extent.width = width,
-		.renderArea.extent.height = height,
-	};
-	vkCmdBeginRenderPass(cbuf, &rp_info, VK_SUBPASS_CONTENTS_INLINE);
+	vkhelper_renderpass_begin(cbuf, ve->rp_edit, ve->fb_focus,
+		width, height);
 	vkCmdBindPipeline(cbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, ve->ppl_edit);
 	vkCmdBindDescriptorSets(cbuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
 		ve->ppll_edit, 0, 1, &ve->desc.set, 0, NULL);
