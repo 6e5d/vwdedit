@@ -1,14 +1,13 @@
 #include <vulkan/vulkan.h>
 
-#include "../../vkhelper/include/barrier.h"
-#include "../../vkhelper/include/image.h"
+#include "../../vkhelper2/include/vkhelper2.h"
 #include "../include/layout.h"
 #include "../include/vwdedit.h"
 
-// TODO: a proper vkhelper_image that handles
+// TODO: a proper vkhelper2_image that handles
 // stages, layouts, levels automatically
 void vwdedit_download_layout_layer(
-	Vwdedit *ve, VkCommandBuffer cbuf, VkhelperImage src
+	Vwdedit *ve, VkCommandBuffer cbuf, Vkhelper2Image src
 ) {
 	VkImageSubresourceLayers src_layer = {
 		.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -27,11 +26,11 @@ void vwdedit_download_layout_layer(
 		.dstOffset = offset,
 		.extent = extent,
 	};
-	vkhelper_barrier(cbuf, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+	vkhelper2_barrier(cbuf, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
 		&src);
-	vkhelper_barrier(cbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+	vkhelper2_barrier(cbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
 		&ve->layer);
@@ -41,12 +40,12 @@ void vwdedit_download_layout_layer(
 		ve->layer.image,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		1, &icopy);
-	vkhelper_barrier(cbuf,
+	vkhelper2_barrier(cbuf,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 		&ve->layer);
-	vkhelper_barrier(cbuf,
+	vkhelper2_barrier(cbuf,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
