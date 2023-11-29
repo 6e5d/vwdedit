@@ -6,7 +6,6 @@
 
 #include "../../vkhelper2/include/vkhelper2.h"
 #include "../../vkstatic/include/vkstatic.h"
-#include "../../vkstatic/include/oneshot.h"
 #include "../include/vwdedit.h"
 
 void vwdedit_damage_all(Vwdedit *ve) {
