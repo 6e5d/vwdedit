@@ -1,7 +1,3 @@
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <vulkan/vulkan.h>
 
 #include "../../vkhelper2/include/vkhelper2.h"

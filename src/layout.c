@@ -1,7 +1,6 @@
 #include <vulkan/vulkan.h>
 
 #include "../../vkhelper2/include/vkhelper2.h"
-#include "../include/layout.h"
 #include "../include/vwdedit.h"
 
 // TODO: a proper vkhelper2_image that handles

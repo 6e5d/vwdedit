@@ -1,7 +1,6 @@
-#ifndef INCLUDEGUARD_VWDEDIT_VWDEDITH
-#define INCLUDEGUARD_VWDEDIT_VWDEDITH
+#ifndef INCLUDEGUARD_VWDEDIT
+#define INCLUDEGUARD_VWDEDIT
 
-#include <stdbool.h>
 #include <vulkan/vulkan.h>
 
 #include "../../dmgrect/include/dmgrect.h"
@@ -32,5 +31,9 @@ void vwdedit_build_command_upload(Vwdedit *ve,
 VkDevice device,
 VkCommandBuffer cbuf);
 void vwdedit_build_command(Vwdedit *ve, VkDevice device, VkCommandBuffer cbuf);
+
+void vwdedit_download_layout_layer(
+	Vwdedit *ve, VkCommandBuffer cbuf, Vkhelper2Image src
+);
 
 #endif
