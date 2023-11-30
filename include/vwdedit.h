@@ -27,11 +27,8 @@ void vwdedit_damage_all(Vwdedit *ve);
 void vwdedit_init(Vwdedit *ve, VkDevice device);
 void vwdedit_setup(Vwdedit *ve, Vkstatic *vks, Vkhelper2Image *img, void **p);
 void vwdedit_deinit(Vwdedit *ve, VkDevice device);
-void vwdedit_build_command_upload(Vwdedit *ve,
-VkDevice device,
-VkCommandBuffer cbuf);
-void vwdedit_build_command(Vwdedit *ve, VkDevice device, VkCommandBuffer cbuf);
-
+void vwdedit_build_command_upload(Vwdedit *ve, VkCommandBuffer cbuf);
+void vwdedit_build_command(Vwdedit *ve, VkCommandBuffer cbuf);
 void vwdedit_download_layout_layer(
 	Vwdedit *ve, VkCommandBuffer cbuf, Vkhelper2Image src
 );

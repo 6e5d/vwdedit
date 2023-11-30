@@ -45,7 +45,7 @@ static void write_desc(Vwdedit *ve, VkDevice device) {
 
 void vwdedit_init(Vwdedit *ve, VkDevice device) {
 	Vkhelper2RenderpassConfig renderpass_conf;
-	vkhelper2_renderpass_config_offscreen(&renderpass_conf, device);
+	vkhelper2_renderpass_config_offscreen(&renderpass_conf);
 	vkhelper2_renderpass_build(&ve->rp_edit, &renderpass_conf, device);
 	ve->sampler = vkhelper2_sampler(device);
 	init_desc(ve, device);
@@ -120,15 +120,12 @@ void vwdedit_setup(Vwdedit *ve, Vkstatic *vks,
 }
 
 // upload cpu render data to gpu paint image
-void vwdedit_build_command_upload(Vwdedit *ve, VkDevice device,
-	VkCommandBuffer cbuf) {
+void vwdedit_build_command_upload(Vwdedit *ve, VkCommandBuffer cbuf) {
 	vkhelper2_copy_buffer_texture(cbuf,
 		ve->paint_buffer.buffer, &ve->paint, &ve->dmg_paint);
 }
 
-void vwdedit_build_command(Vwdedit *ve, VkDevice device,
-	VkCommandBuffer cbuf
-) {
+void vwdedit_build_command(Vwdedit *ve, VkCommandBuffer cbuf) {
 	// printf("%d %d %u %u\n",
 	// 	ve->dmg_paint.offset[0],
 	// 	ve->dmg_paint.offset[1],
