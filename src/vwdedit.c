@@ -57,6 +57,7 @@ static void vwdedit_reset(Vwdedit *ve, VkDevice device) {
 	vkhelper2_image_deinit(&ve->layer, device);
 	vkhelper2_image_deinit(&ve->paint, device);
 	vkhelper2_buffer_deinit(&ve->paint_buffer, device);
+	vkhelper2_buffer_deinit(&ve->layer_buffer, device);
 	vkDestroyFramebuffer(device, ve->fb_focus, NULL);
 }
 
@@ -70,7 +71,7 @@ void vwdedit_deinit(Vwdedit *ve, VkDevice device) {
 }
 
 void vwdedit_setup(Vwdedit *ve, Vkstatic *vks,
-	Vkhelper2Image *img, void **p) {
+	Vkhelper2Image *img, void **p_paint, void **p_layer) {
 	// 1.deinit
 	if (!ve->first_setup) {
 		vwdedit_reset(ve, vks->device);
@@ -101,11 +102,14 @@ void vwdedit_setup(Vwdedit *ve, Vkstatic *vks,
 		&ve->paint);
 	vkstatic_oneshot_end(cbuf, vks);
 	write_desc(ve, vks->device);
-	vkhelper2_buffer_init_cpu(
-		&ve->paint_buffer, w * h * 4,
+	vkhelper2_buffer_init_cpu(&ve->paint_buffer, w * h * 4,
+		vks->device, vks->memprop);
+	vkhelper2_buffer_init_cpu(&ve->layer_buffer, w * h * 4,
 		vks->device, vks->memprop);
 	assert(0 == vkMapMemory(vks->device, ve->paint_buffer.memory, 0,
-		ve->paint_buffer.size, 0, p));
+		ve->paint_buffer.size, 0, p_paint));
+	assert(0 == vkMapMemory(vks->device, ve->layer_buffer.memory, 0,
+		ve->layer_buffer.size, 0, p_layer));
 	VkFramebufferCreateInfo fbci = {
 		.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
 		.renderPass = ve->rp_edit,
@@ -119,13 +123,7 @@ void vwdedit_setup(Vwdedit *ve, Vkstatic *vks,
 		vks->device, &fbci, NULL, &ve->fb_focus));
 }
 
-// upload cpu render data to gpu paint image
-void vwdedit_build_command_upload(Vwdedit *ve, VkCommandBuffer cbuf) {
-	vkhelper2_copy_buffer_texture(cbuf,
-		ve->paint_buffer.buffer, &ve->paint, &ve->dmg_paint);
-}
-
-void vwdedit_build_command(Vwdedit *ve, VkCommandBuffer cbuf) {
+void vwdedit_blend(Vwdedit *ve, VkCommandBuffer cbuf) {
 	// printf("%d %d %u %u\n",
 	// 	ve->dmg_paint.offset[0],
 	// 	ve->dmg_paint.offset[1],
