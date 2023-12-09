@@ -84,7 +84,8 @@ void vwdedit_setup(Vwdedit *ve, Vkstatic *vks,
 	vkhelper2_image_new_color(
 		&ve->layer, vks->device, vks->memprop, w, h, false,
 		VK_IMAGE_USAGE_SAMPLED_BIT |
-		VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+		VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
 	vkhelper2_image_new_color(
 		&ve->paint, vks->device, vks->memprop, w, h, false,
 		VK_IMAGE_USAGE_SAMPLED_BIT |
