@@ -32,9 +32,9 @@ void vwdedit_blend(Vwdedit *ve, VkCommandBuffer cbuf);
 void vwdedit_download_layout_layer(
 	Vwdedit *ve, VkCommandBuffer cbuf, Vkhelper2Image *src
 );
-void vwdedit_download_layer(Vwdedit *ve, VkCommandBuffer cbuf);
-void vwdedit_upload_draw(Vwdedit *ve, VkCommandBuffer cbuf);
-void vwdedit_upload_undo(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *rect);
+void vwdedit_download_layer(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *rect);
+void vwdedit_upload_paint(Vwdedit *ve, VkCommandBuffer cbuf);
+void vwdedit_upload_layer(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *rect);
 void vwdedit_copy(VkCommandBuffer cbuf, Dmgrect *rect,
 	Vkhelper2Image *src, Vkhelper2Image *dst);
 
