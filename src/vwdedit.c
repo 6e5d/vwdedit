@@ -4,6 +4,7 @@
 #include "../../vkstatic/include/vkstatic.h"
 #include "../include/vwdedit.h"
 
+#define VWDEDIT_PPL_COUNT 2
 void vwdedit_damage_all(Vwdedit *ve) {
 	ve->dmg_paint.offset[0] = 0;
 	ve->dmg_paint.offset[1] = 0;
@@ -11,14 +12,18 @@ void vwdedit_damage_all(Vwdedit *ve) {
 	ve->dmg_paint.size[1] = ve->layer.size[1];
 }
 
-static void init_pipeline_edit(Vwdedit *ve, VkDevice device) {
+static void init_pipeline_edit(Vwdedit *ve, VkDevice device,
+	size_t idx, char *name
+) {
 	Vkhelper2PipelineConfig vpc = {0};
 	vkhelper2_pipeline_config(&vpc, 0, 0, 1);
-	vkhelper2_pipeline_simple_shader(&vpc, device,
-		__FILE__, "../../shader/edit");
+	char path[256];
+	snprintf(path, 256, "../../shader/%s_frag.spv", name);
+	vkhelper2_pipeline_simple_shader2(&vpc, device, __FILE__,
+		"../../shader/edit_vert.spv", path);
 	vpc.desc[0] = ve->desc.layout;
 	vpc.cba.blendEnable = VK_FALSE;
-	vkhelper2_pipeline_build(&ve->ppll_edit, &ve->ppl_edit,
+	vkhelper2_pipeline_build(&ve->ppll[idx], &ve->ppl[idx],
 		&vpc, ve->rp_edit, device, 0);
 	vkhelper2_pipeline_config_deinit(&vpc, device);
 }
@@ -44,12 +49,16 @@ static void write_desc(Vwdedit *ve, VkDevice device) {
 }
 
 void vwdedit_init(Vwdedit *ve, VkDevice device) {
+	ve->pidx = 0;
 	Vkhelper2RenderpassConfig renderpass_conf;
 	vkhelper2_renderpass_config_offscreen(&renderpass_conf);
 	vkhelper2_renderpass_build(&ve->rp_edit, &renderpass_conf, device);
 	ve->sampler = vkhelper2_sampler(device);
 	init_desc(ve, device);
-	init_pipeline_edit(ve, device);
+	ve->ppl = malloc(VWDEDIT_PPL_COUNT * sizeof(VkPipeline));
+	ve->ppll = malloc(VWDEDIT_PPL_COUNT * sizeof(VkPipelineLayout));
+	init_pipeline_edit(ve, device, 0, "pen");
+	init_pipeline_edit(ve, device, 1, "eraser");
 	ve->first_setup = true;
 }
 
@@ -65,8 +74,12 @@ void vwdedit_deinit(Vwdedit *ve, VkDevice device) {
 	vwdedit_reset(ve, device);
 	vkDestroySampler(device, ve->sampler, NULL);
 	vkhelper2_desc_deinit(&ve->desc, device);
-	vkDestroyPipeline(device, ve->ppl_edit, NULL);
-	vkDestroyPipelineLayout(device, ve->ppll_edit, NULL);
+	for (size_t i = 0; i < VWDEDIT_PPL_COUNT; i += 1) {
+		vkDestroyPipeline(device, ve->ppl[i], NULL);
+		vkDestroyPipelineLayout(device, ve->ppll[i], NULL);
+	}
+	free(ve->ppl);
+	free(ve->ppll);
 	vkDestroyRenderPass(device, ve->rp_edit, NULL);
 }
 
@@ -136,9 +149,10 @@ void vwdedit_blend(Vwdedit *ve, VkCommandBuffer cbuf) {
 	vkhelper2_dynstate_vs(cbuf, width, height);
 	vkhelper2_renderpass_begin(cbuf, ve->rp_edit, ve->fb_focus,
 		width, height);
-	vkCmdBindPipeline(cbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, ve->ppl_edit);
+	vkCmdBindPipeline(cbuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
+		ve->ppl[ve->pidx]);
 	vkCmdBindDescriptorSets(cbuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
-		ve->ppll_edit, 0, 1, &ve->desc.set, 0, NULL);
+		ve->ppll[ve->pidx], 0, 1, &ve->desc.set, 0, NULL);
 	vkCmdDraw(cbuf, 6, 1, 0, 0);
 	vkCmdEndRenderPass(cbuf);
 	dmgrect_init(&ve->dmg_paint);

@@ -9,8 +9,10 @@
 
 typedef struct {
 	VkRenderPass rp_edit;
-	VkPipeline ppl_edit;
-	VkPipelineLayout ppll_edit;
+	// 0: pen, 1: eraser
+	size_t pidx;
+	VkPipeline *ppl;
+	VkPipelineLayout *ppll;
 	Vkhelper2Desc desc;
 	VkSampler sampler;
 	Dmgrect dmg_paint;
