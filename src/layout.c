@@ -65,7 +65,7 @@ void vwdedit_download_layer(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *rect) {
 		1, &icopy);
 }
 
-static void vwdedit_upload(VkCommandBuffer cbuf,
+static void buffer_image_copy(VkCommandBuffer cbuf,
 	VkBuffer src, Vkhelper2Image *dst, Dmgrect *rect
 ) {
 	Dmgrect window = {0};
@@ -105,19 +105,15 @@ static void vwdedit_upload(VkCommandBuffer cbuf,
 		dst);
 }
 
-// all pixel copy, 1 image 1 layer, do image barrier before and after
-// the target is used as sampler
-void vwdedit_upload_paint(Vwdedit *ve, VkCommandBuffer cbuf) {
+void vwdedit_upload_paint(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *rect) {
 	VkBuffer src = ve->paint_buffer.buffer;
 	Vkhelper2Image *dst = &ve->paint;
-	Dmgrect *rect = &ve->dmg_paint;
-	vwdedit_upload(cbuf, src, dst, rect);
+	buffer_image_copy(cbuf, src, dst, rect);
 }
-
 void vwdedit_upload_layer(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *rect) {
 	VkBuffer src = ve->layer_buffer.buffer;
 	Vkhelper2Image *dst = &ve->layer;
-	vwdedit_upload(cbuf, src, dst, rect);
+	buffer_image_copy(cbuf, src, dst, rect);
 }
 
 void vwdedit_download_layout_layer(

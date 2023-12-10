@@ -5,12 +5,6 @@
 #include "../include/vwdedit.h"
 
 #define VWDEDIT_PPL_COUNT 2
-void vwdedit_damage_all(Vwdedit *ve) {
-	ve->dmg_paint.offset[0] = 0;
-	ve->dmg_paint.offset[1] = 0;
-	ve->dmg_paint.size[0] = ve->layer.size[0];
-	ve->dmg_paint.size[1] = ve->layer.size[1];
-}
 
 static void init_pipeline_edit(Vwdedit *ve, VkDevice device,
 	size_t idx, char *name
@@ -137,13 +131,8 @@ void vwdedit_setup(Vwdedit *ve, Vkstatic *vks,
 		vks->device, &fbci, NULL, &ve->fb_focus));
 }
 
-void vwdedit_blend(Vwdedit *ve, VkCommandBuffer cbuf) {
-	// printf("%d %d %u %u\n",
-	// 	ve->dmg_paint.offset[0],
-	// 	ve->dmg_paint.offset[1],
-	// 	ve->dmg_paint.size[0],
-	// 	ve->dmg_paint.size[1]);
-	if (dmgrect_is_empty(&ve->dmg_paint)) { return; }
+void vwdedit_blend(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *dmg) {
+	if (dmgrect_is_empty(dmg)) { return; }
 	uint32_t width = ve->paint.size[0];
 	uint32_t height = ve->paint.size[1];
 	vkhelper2_dynstate_vs(cbuf, width, height);
@@ -155,5 +144,4 @@ void vwdedit_blend(Vwdedit *ve, VkCommandBuffer cbuf) {
 		ve->ppll[ve->pidx], 0, 1, &ve->desc.set, 0, NULL);
 	vkCmdDraw(cbuf, 6, 1, 0, 0);
 	vkCmdEndRenderPass(cbuf);
-	dmgrect_init(&ve->dmg_paint);
 }
