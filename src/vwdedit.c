@@ -98,16 +98,8 @@ void vwdedit_setup(Vwdedit *ve, Vkstatic *vks,
 		VK_IMAGE_USAGE_SAMPLED_BIT |
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT);
 	VkCommandBuffer cbuf = vkstatic_oneshot_begin(vks);
-	vkhelper2_barrier(cbuf,
-		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		VK_PIPELINE_STAGE_HOST_BIT,
-		VK_PIPELINE_STAGE_HOST_BIT,
-		&ve->layer);
-	vkhelper2_barrier(cbuf,
-		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		VK_PIPELINE_STAGE_HOST_BIT,
-		VK_PIPELINE_STAGE_HOST_BIT,
-		&ve->paint);
+	vkhelper2_barrier_shader(cbuf, &ve->layer);
+	vkhelper2_barrier_shader(cbuf, &ve->paint);
 	vkstatic_oneshot_end(cbuf, vks);
 	write_desc(ve, vks->device);
 	vkhelper2_buffer_init_cpu(&ve->paint_buffer, w * h * 4,
