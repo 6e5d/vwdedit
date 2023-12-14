@@ -12,9 +12,9 @@ static void init_pipeline_edit(Vwdedit *ve, VkDevice device,
 	Vkhelper2PipelineConfig vpc = {0};
 	vkhelper2_pipeline_config(&vpc, 0, 0, 1);
 	char path[256];
-	snprintf(path, 256, "../../shader/%s_frag.spv", name);
+	snprintf(path, 256, "../../vwdraw_shaders/build/%s_frag.spv", name);
 	vkhelper2_pipeline_simple_shader2(&vpc, device, __FILE__,
-		"../../shader/edit_vert.spv", path);
+		"../../vwdraw_shaders/build/edit_vert.spv", path);
 	vpc.desc[0] = ve->desc.layout;
 	vpc.cba.blendEnable = VK_FALSE;
 	vkhelper2_pipeline_build(&ve->ppll[idx], &ve->ppl[idx],
