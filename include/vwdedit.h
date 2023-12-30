@@ -1,6 +1,3 @@
-#ifndef INCLUDEGUARD_VWDEDIT
-#define INCLUDEGUARD_VWDEDIT
-
 #include <vulkan/vulkan.h>
 
 #include "../../dmgrect/include/dmgrect.h"
@@ -13,29 +10,27 @@ typedef struct {
 	size_t pidx;
 	VkPipeline *ppl;
 	VkPipelineLayout *ppll;
-	Vkhelper2Desc desc;
+	Vkhelper2(Desc) desc;
 	VkSampler sampler;
 	bool first_setup;
 	// objects that are destroyed/recreated between focus
-	Vkhelper2Image paint;
-	Vkhelper2Image layer;
-	Vkhelper2Buffer paint_buffer;
-	Vkhelper2Buffer layer_buffer;
+	Vkhelper2(Image) paint;
+	Vkhelper2(Image) layer;
+	Vkhelper2(Buffer) paint_buffer;
+	Vkhelper2(Buffer) layer_buffer;
 	VkFramebuffer fb_focus;
-} Vwdedit;
+} Vwdedit();
 
-void vwdedit_init(Vwdedit *ve, VkDevice device);
-void vwdedit_setup(Vwdedit *ve, Vkstatic *vks,
-	Vkhelper2Image *img, void **p_paint, void **p_layer);
-void vwdedit_deinit(Vwdedit *ve, VkDevice device);
-void vwdedit_blend(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *dmg);
-void vwdedit_download_layout_layer(
-	Vwdedit *ve, VkCommandBuffer cbuf, Vkhelper2Image *src
+void vwdedit(init)(Vwdedit() *ve, VkDevice device);
+void vwdedit(setup)(Vwdedit() *ve, Vkstatic() *vks,
+	Vkhelper2(Image) *img, void **p_paint, void **p_layer);
+void vwdedit(deinit)(Vwdedit() *ve, VkDevice device);
+void vwdedit(blend)(Vwdedit() *ve, VkCommandBuffer cbuf, Dmgrect() *dmg);
+void vwdedit(download_layout_layer)(
+	Vwdedit() *ve, VkCommandBuffer cbuf, Vkhelper2(Image) *src
 );
-void vwdedit_download_layer(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *rect);
-void vwdedit_upload_paint(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *rect);
-void vwdedit_upload_layer(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *rect);
-void vwdedit_copy(VkCommandBuffer cbuf, Dmgrect *rect,
-	Vkhelper2Image *src, Vkhelper2Image *dst);
-
-#endif
+void vwdedit(download_layer)(Vwdedit() *ve, VkCommandBuffer cbuf, Dmgrect() *rect);
+void vwdedit(upload_paint)(Vwdedit() *ve, VkCommandBuffer cbuf, Dmgrect() *rect);
+void vwdedit(upload_layer)(Vwdedit() *ve, VkCommandBuffer cbuf, Dmgrect() *rect);
+void vwdedit(copy)(VkCommandBuffer cbuf, Dmgrect() *rect,
+	Vkhelper2(Image) *src, Vkhelper2(Image) *dst);

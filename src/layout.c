@@ -1,10 +1,7 @@
-#include <vulkan/vulkan.h>
-
-#include "../../vkhelper2/include/vkhelper2.h"
 #include "../include/vwdedit.h"
 
-void vwdedit_copy(VkCommandBuffer cbuf, Dmgrect *rect,
-	Vkhelper2Image *src, Vkhelper2Image *dst
+void vwdedit(copy)(VkCommandBuffer cbuf, Dmgrect() *rect,
+	Vkhelper2(Image) *src, Vkhelper2(Image) *dst
 ) {
 	VkImageSubresourceLayers src_layer = {
 		.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -23,23 +20,23 @@ void vwdedit_copy(VkCommandBuffer cbuf, Dmgrect *rect,
 		.dstOffset = offset,
 		.extent = extent,
 	};
-	vkhelper2_barrier_src(cbuf, src);
-	vkhelper2_barrier_dst(cbuf, dst);
+	vkhelper2(barrier_src)(cbuf, src);
+	vkhelper2(barrier_dst)(cbuf, dst);
 	vkCmdCopyImage(cbuf,
 		src->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 		dst->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		1, &icopy);
 }
 
-void vwdedit_download_layer(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *rect) {
-	Vkhelper2Image *src = &ve->layer;
+void vwdedit(download_layer)(Vwdedit() *ve, VkCommandBuffer cbuf, Dmgrect() *rect) {
+	Vkhelper2(Image) *src = &ve->layer;
 	VkBuffer dst = ve->layer_buffer.buffer;
 
-	Dmgrect window = {0};
+	Dmgrect() window = {0};
 	window.size[0] = src->size[0];
 	window.size[1] = src->size[1];
-	dmgrect_intersection(&window, rect);
-	if (dmgrect_is_empty(&window)) { return; }
+	dmgrect(intersection)(&window, rect);
+	if (dmgrect(is_empty)(&window)) { return; }
 
 	VkImageSubresourceLayers layers = {
 		.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -58,7 +55,7 @@ void vwdedit_download_layer(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *rect) {
 		.imageOffset = offset,
 		.imageExtent = extent,
 	};
-	vkhelper2_barrier_src(cbuf, src);
+	vkhelper2(barrier_src)(cbuf, src);
 	vkCmdCopyImageToBuffer(cbuf,
 		src->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 		dst,
@@ -66,13 +63,13 @@ void vwdedit_download_layer(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *rect) {
 }
 
 static void buffer_image_copy(VkCommandBuffer cbuf,
-	VkBuffer src, Vkhelper2Image *dst, Dmgrect *rect
+	VkBuffer src, Vkhelper2(Image) *dst, Dmgrect() *rect
 ) {
-	Dmgrect window = {0};
+	Dmgrect() window = {0};
 	window.size[0] = dst->size[0];
 	window.size[1] = dst->size[1];
-	dmgrect_intersection(&window, rect);
-	if (dmgrect_is_empty(&window)) { return; }
+	dmgrect(intersection)(&window, rect);
+	if (dmgrect(is_empty)(&window)) { return; }
 
 	VkImageSubresourceLayers layers = {
 		.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -91,7 +88,7 @@ static void buffer_image_copy(VkCommandBuffer cbuf,
 		.imageOffset = offset,
 		.imageExtent = extent,
 	};
-	vkhelper2_barrier(cbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+	vkhelper2(barrier)(cbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
 		dst);
@@ -99,31 +96,31 @@ static void buffer_image_copy(VkCommandBuffer cbuf,
 		src, dst->image,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		1, &icopy);
-	vkhelper2_barrier(cbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+	vkhelper2(barrier)(cbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 		dst);
 }
 
-void vwdedit_upload_paint(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *rect) {
+void vwdedit(upload_paint)(Vwdedit() *ve, VkCommandBuffer cbuf, Dmgrect() *rect) {
 	VkBuffer src = ve->paint_buffer.buffer;
-	Vkhelper2Image *dst = &ve->paint;
+	Vkhelper2(Image) *dst = &ve->paint;
 	buffer_image_copy(cbuf, src, dst, rect);
 }
-void vwdedit_upload_layer(Vwdedit *ve, VkCommandBuffer cbuf, Dmgrect *rect) {
+void vwdedit(upload_layer)(Vwdedit() *ve, VkCommandBuffer cbuf, Dmgrect() *rect) {
 	VkBuffer src = ve->layer_buffer.buffer;
-	Vkhelper2Image *dst = &ve->layer;
+	Vkhelper2(Image) *dst = &ve->layer;
 	buffer_image_copy(cbuf, src, dst, rect);
 }
 
-void vwdedit_download_layout_layer(
-	Vwdedit *ve, VkCommandBuffer cbuf, Vkhelper2Image *src
+void vwdedit(download_layout_layer)(
+	Vwdedit() *ve, VkCommandBuffer cbuf, Vkhelper2(Image) *src
 ) {
-	Dmgrect rect = { .size = {
+	Dmgrect() rect = { .size = {
 		src->size[0],
 		src->size[1],
 	}};
-	vwdedit_copy(cbuf, &rect, src, &ve->layer);
-	vkhelper2_barrier_shader(cbuf, src);
-	vkhelper2_barrier_shader(cbuf, &ve->layer);
+	vwdedit(copy)(cbuf, &rect, src, &ve->layer);
+	vkhelper2(barrier_shader)(cbuf, src);
+	vkhelper2(barrier_shader)(cbuf, &ve->layer);
 }
